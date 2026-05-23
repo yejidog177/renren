@@ -785,6 +785,16 @@ void Menu::handleAdminReview() {
         std::cout << "\n========== 报名详情 ==========\n";
         std::cout << "报名ID: " << reg->getId() << "\n";
         std::cout << "报名用户: " << reg->getUsername() << "\n";
+
+        // 查找学生信息
+        User* student = dm.findUser(reg->getUsername());
+        Student* stu = dynamic_cast<Student*>(student);
+        if (stu != NULL) {
+            std::cout << "专    业: " << stu->getMajor() << "\n";
+            std::cout << "班    级: " << stu->getClassName() << "\n";
+            std::cout << "学    号: " << stu->getStudentId() << "\n";
+        }
+
         std::cout << "节目名称: " << reg->getProgramName() << "\n";
         std::cout << "节目类型: " << reg->getProgramType() << "\n";
         std::cout << "节目时长: " << reg->getDuration() << " 分钟\n";
@@ -800,20 +810,27 @@ void Menu::handleAdminReview() {
         }
         std::cout << "================================\n";
 
-        if (reg->isApproved()) {
-            std::cout << "\n该报名已通过审核。\n";
-            pauseScreen();
-            continue;
-        }
-
         // 审核操作
         std::cout << "\n审核操作:\n";
         std::cout << "  1. 通过\n";
         std::cout << "  2. 驳回\n";
+        if (reg->isApproved() || reg->isRejected()) {
+            std::cout << "  3. 撤销审核（重置为待审核）\n";
+        }
         std::cout << "  0. 返回\n";
 
-        int action = readInt("\n请选择: ", 0, 2);
+        int maxOption = (reg->isApproved() || reg->isRejected()) ? 3 : 2;
+        int action = readInt("\n请选择: ", 0, maxOption);
         if (action == 0) continue;
+
+        if (action == 3) {
+            reg->setStatus("pending");
+            reg->setReviewComment("");
+            std::cout << "\n已撤销审核，该报名重置为待审核状态。\n";
+            dm.saveAll();
+            pauseScreen();
+            continue;
+        }
 
         std::string comment;
         if (action == 2) {
