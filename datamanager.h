@@ -36,6 +36,10 @@ public:
 
     const std::vector<std::string>& getClasses(const std::string& major) const;
     bool classExists(const std::string& major, const std::string& className) const;
+    bool addMajor(const std::string& major);
+    bool deleteMajor(const std::string& major);
+    bool addClass(const std::string& major, const std::string& className);
+    bool deleteClass(const std::string& major, const std::string& className);
 
     // 公告操作
     bool addAnnouncement(const std::string& title, const std::string& content,

@@ -24,6 +24,7 @@ private:
     void showAdminMenu();
     void handleAdminAnnouncements();
     void handleAdminReview();
+    void handleAdminDataManage();
 
     void clearScreen();
     void pauseScreen();

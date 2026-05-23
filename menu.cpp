@@ -547,16 +547,18 @@ void Menu::showAdminMenu() {
         std::cout << "╠══════════════════════════════════╣\n";
         std::cout << "║  1. 编辑和发送公告              ║\n";
         std::cout << "║  2. 审核报名                    ║\n";
-        std::cout << "║  3. 修改密码                    ║\n";
+        std::cout << "║  3. 专业/班级管理               ║\n";
+        std::cout << "║  4. 修改密码                    ║\n";
         std::cout << "║  0. 退出登录                    ║\n";
         std::cout << "╚══════════════════════════════════╝\n";
 
-        int choice = readInt("\n请选择操作: ", 0, 3);
+        int choice = readInt("\n请选择操作: ", 0, 4);
 
         switch (choice) {
             case 1: handleAdminAnnouncements(); break;
             case 2: handleAdminReview(); break;
-            case 3: handleChangePassword(); break;
+            case 3: handleAdminDataManage(); break;
+            case 4: handleChangePassword(); break;
             case 0: return;
         }
     }
@@ -852,6 +854,136 @@ void Menu::handleAdminReview() {
 
         dm.saveAll();
         pauseScreen();
+    }
+}
+
+void Menu::handleAdminDataManage() {
+    while (true) {
+        clearScreen();
+        std::cout << "\n========== 专业/班级管理 ==========\n";
+        std::cout << "\n  1. 查看所有专业和班级\n";
+        std::cout << "  2. 添加专业\n";
+        std::cout << "  3. 删除专业\n";
+        std::cout << "  4. 添加班级\n";
+        std::cout << "  5. 删除班级\n";
+        std::cout << "  0. 返回\n";
+
+        int choice = readInt("\n请选择操作: ", 0, 5);
+
+        switch (choice) {
+            case 1: {
+                clearScreen();
+                std::cout << "\n========== 专业与班级列表 ==========\n";
+                const std::vector<std::string>& majorList = dm.getMajors();
+                for (size_t i = 0; i < majorList.size(); ++i) {
+                    std::cout << "\n专业: " << majorList[i] << "\n";
+                    const std::vector<std::string>& clsList = dm.getClasses(majorList[i]);
+                    std::cout << "  班级: ";
+                    if (clsList.empty()) {
+                        std::cout << "（无）";
+                    } else {
+                        for (size_t j = 0; j < clsList.size(); ++j) {
+                            if (j > 0) std::cout << ", ";
+                            std::cout << clsList[j];
+                        }
+                    }
+                    std::cout << "\n";
+                }
+                pauseScreen();
+                break;
+            }
+            case 2: {
+                std::string major = readLine("请输入新专业名称 (0取消): ");
+                if (major == "0") break;
+                if (major.empty() || major.find('|') != std::string::npos) {
+                    std::cout << "专业名称无效！\n";
+                    pauseScreen();
+                    break;
+                }
+                if (dm.addMajor(major)) {
+                    std::cout << "\n专业添加成功！\n";
+                } else {
+                    std::cout << "\n该专业已存在！\n";
+                }
+                pauseScreen();
+                break;
+            }
+            case 3: {
+                std::cout << "\n当前专业列表:\n";
+                const std::vector<std::string>& majorList = dm.getMajors();
+                for (size_t i = 0; i < majorList.size(); ++i) {
+                    std::cout << "  " << (i + 1) << ". " << majorList[i] << "\n";
+                }
+                std::cout << "  0. 返回\n";
+                int idx = readInt("请选择要删除的专业: ", 0, (int)majorList.size());
+                if (idx == 0) break;
+                std::string major = majorList[idx - 1];
+                if (dm.deleteMajor(major)) {
+                    std::cout << "\n专业及其班级已删除！\n";
+                } else {
+                    std::cout << "\n删除失败！\n";
+                }
+                pauseScreen();
+                break;
+            }
+            case 4: {
+                const std::vector<std::string>& majorList = dm.getMajors();
+                std::cout << "\n选择要添加班级的专业:\n";
+                for (size_t i = 0; i < majorList.size(); ++i) {
+                    std::cout << "  " << (i + 1) << ". " << majorList[i] << "\n";
+                }
+                std::cout << "  0. 返回\n";
+                int idx = readInt("请选择: ", 0, (int)majorList.size());
+                if (idx == 0) break;
+                std::string major = majorList[idx - 1];
+                std::string cls = readLine("请输入新班级名称: ");
+                if (cls.empty() || cls.find('|') != std::string::npos) {
+                    std::cout << "班级名称无效！\n";
+                    pauseScreen();
+                    break;
+                }
+                if (dm.addClass(major, cls)) {
+                    std::cout << "\n班级添加成功！\n";
+                } else {
+                    std::cout << "\n该班级已存在！\n";
+                }
+                pauseScreen();
+                break;
+            }
+            case 5: {
+                const std::vector<std::string>& majorList = dm.getMajors();
+                std::cout << "\n选择专业:\n";
+                for (size_t i = 0; i < majorList.size(); ++i) {
+                    std::cout << "  " << (i + 1) << ". " << majorList[i] << "\n";
+                }
+                std::cout << "  0. 返回\n";
+                int idx = readInt("请选择: ", 0, (int)majorList.size());
+                if (idx == 0) break;
+                std::string major = majorList[idx - 1];
+                const std::vector<std::string>& clsList = dm.getClasses(major);
+                if (clsList.empty()) {
+                    std::cout << "\n该专业下无班级。\n";
+                    pauseScreen();
+                    break;
+                }
+                std::cout << "\n班级列表:\n";
+                for (size_t i = 0; i < clsList.size(); ++i) {
+                    std::cout << "  " << (i + 1) << ". " << clsList[i] << "\n";
+                }
+                std::cout << "  0. 返回\n";
+                int cidx = readInt("请选择要删除的班级: ", 0, (int)clsList.size());
+                if (cidx == 0) break;
+                if (dm.deleteClass(major, clsList[cidx - 1])) {
+                    std::cout << "\n班级删除成功！\n";
+                } else {
+                    std::cout << "\n删除失败！\n";
+                }
+                pauseScreen();
+                break;
+            }
+            case 0:
+                return;
+        }
     }
 }
 

@@ -103,6 +103,48 @@ bool DataManager::classExists(const std::string& major, const std::string& class
     return std::find(clist.begin(), clist.end(), className) != clist.end();
 }
 
+// ==================== Major/Class Management ====================
+
+bool DataManager::addMajor(const std::string& major) {
+    if (majorExists(major)) return false;
+    majors.push_back(major);
+    saveAll();
+    return true;
+}
+
+bool DataManager::deleteMajor(const std::string& major) {
+    for (std::vector<std::string>::iterator it = majors.begin(); it != majors.end(); ++it) {
+        if (*it == major) {
+            majors.erase(it);
+            classes.erase(major);
+            saveAll();
+            return true;
+        }
+    }
+    return false;
+}
+
+bool DataManager::addClass(const std::string& major, const std::string& className) {
+    if (!majorExists(major)) return false;
+    if (classExists(major, className)) return false;
+    classes[major].push_back(className);
+    saveAll();
+    return true;
+}
+
+bool DataManager::deleteClass(const std::string& major, const std::string& className) {
+    if (!majorExists(major)) return false;
+    std::vector<std::string>& clist = classes[major];
+    for (std::vector<std::string>::iterator it = clist.begin(); it != clist.end(); ++it) {
+        if (*it == className) {
+            clist.erase(it);
+            saveAll();
+            return true;
+        }
+    }
+    return false;
+}
+
 // ==================== Announcement Operations ====================
 
 bool DataManager::addAnnouncement(const std::string& title, const std::string& content,
