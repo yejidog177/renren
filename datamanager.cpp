@@ -179,12 +179,6 @@ Announcement* DataManager::findAnnouncement(int id) {
 
 // ==================== Registration Operations ====================
 
-Registration* DataManager::createRegistration(const std::string& username) {
-    Registration* r = new Registration();
-    r->setPerformer(username);
-    return r;
-}
-
 bool DataManager::saveRegistration(Registration* reg) {
     if (reg->getId() == 0) {
         // 新报名，分配ID
@@ -197,7 +191,7 @@ bool DataManager::saveRegistration(Registration* reg) {
         registrations.push_back(r);
         nextRegistrationId++;
     } else {
-        // 更新已有报名
+        // 更新已有报名，并重置审核状态
         Registration* existing = findRegistration(reg->getId());
         if (existing != NULL) {
             existing->setProgramType(reg->getProgramType());
@@ -205,6 +199,8 @@ bool DataManager::saveRegistration(Registration* reg) {
             existing->setProgramName(reg->getProgramName());
             existing->setDescription(reg->getDescription());
             existing->setPerformer(reg->getPerformer());
+            existing->setStatus("pending");
+            existing->setReviewComment("");
         }
     }
     delete reg;

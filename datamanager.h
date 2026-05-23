@@ -49,7 +49,6 @@ public:
     Announcement* findAnnouncement(int id);
 
     // 报名操作
-    Registration* createRegistration(const std::string& username);
     bool saveRegistration(Registration* reg);
     Registration* getRegistrationByUser(const std::string& username);
     Registration* findRegistration(int id);
