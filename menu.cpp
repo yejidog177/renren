@@ -283,9 +283,29 @@ void Menu::handleStudentAnnouncements() {
             // 查看入选名单
             clearScreen();
             std::cout << "\n========== 最终入选名单 ==========\n";
+
+            // 1. 显示已通过审核的报名
+            const std::vector<Registration*>& allRegs = dm.getAllRegistrations();
+            bool hasApproved = false;
+            std::cout << "\n--- 已通过审核的节目 ---\n";
+            for (size_t i = 0; i < allRegs.size(); ++i) {
+                if (allRegs[i]->isApproved()) {
+                    hasApproved = true;
+                    std::cout << "\n  * 节目: " << allRegs[i]->getProgramName()
+                              << " | 类型: " << allRegs[i]->getProgramType()
+                              << " | 表演者: " << allRegs[i]->getPerformer()
+                              << " | 报名人: " << allRegs[i]->getUsername() << "\n";
+                }
+            }
+            if (!hasApproved) {
+                std::cout << "（暂无）\n";
+            }
+
+            // 2. 显示管理员发布的入选名单公告
+            std::cout << "\n--- 管理员公布的入选名单 ---\n";
             std::vector<Announcement*> accepted = dm.getAcceptedLists();
             if (accepted.empty()) {
-                std::cout << "\n暂未公布入选名单。\n";
+                std::cout << "（暂无）\n";
             } else {
                 for (size_t i = 0; i < accepted.size(); ++i) {
                     std::cout << "\n────────────────────────────────\n";
@@ -713,10 +733,109 @@ void Menu::handleAdminAnnouncements() {
 }
 
 void Menu::handleAdminReview() {
-    clearScreen();
-    std::cout << "\n========== 审核报名 ==========\n";
-    std::cout << "\n此功能正在开发中，敬请期待...\n";
-    pauseScreen();
+    while (true) {
+        clearScreen();
+        std::cout << "\n========== 审核报名 ==========\n";
+        const std::vector<Registration*>& all = dm.getAllRegistrations();
+
+        if (all.empty()) {
+            std::cout << "\n暂无报名记录。\n";
+            pauseScreen();
+            return;
+        }
+
+        // 统计
+        int pendingCount = 0, approvedCount = 0, rejectedCount = 0;
+        for (size_t i = 0; i < all.size(); ++i) {
+            if (all[i]->isPending()) pendingCount++;
+            else if (all[i]->isApproved()) approvedCount++;
+            else rejectedCount++;
+        }
+
+        std::cout << "\n报名统计: 总计 " << all.size() << " | 待审核 " << pendingCount
+                  << " | 已通过 " << approvedCount << " | 未通过 " << rejectedCount << "\n";
+
+        std::cout << "\n报名列表:\n";
+        std::cout << "────────────────────────────────────────────\n";
+        for (size_t i = 0; i < all.size(); ++i) {
+            std::cout << "ID:" << all[i]->getId()
+                      << " | 用户:" << all[i]->getUsername()
+                      << " | 节目:" << all[i]->getProgramName()
+                      << " | 状态:" << all[i]->getStatusDisplay() << "\n";
+        }
+        std::cout << "────────────────────────────────────────────\n";
+
+        std::cout << "\n  1. 查看报名详情并审核\n";
+        std::cout << "  0. 返回\n";
+
+        int choice = readInt("\n请选择: ", 0, 1);
+        if (choice == 0) return;
+
+        // 查看详情并审核
+        int regId = readInt("请输入要审核的报名ID: ", 1, 99999);
+        Registration* reg = dm.findRegistration(regId);
+        if (reg == NULL) {
+            std::cout << "\n未找到该报名！\n";
+            pauseScreen();
+            continue;
+        }
+
+        // 显示详情
+        clearScreen();
+        std::cout << "\n========== 报名详情 ==========\n";
+        std::cout << "报名ID: " << reg->getId() << "\n";
+        std::cout << "报名用户: " << reg->getUsername() << "\n";
+        std::cout << "节目名称: " << reg->getProgramName() << "\n";
+        std::cout << "节目类型: " << reg->getProgramType() << "\n";
+        std::cout << "节目时长: " << reg->getDuration() << " 分钟\n";
+        std::cout << "表 演 者: " << reg->getPerformer() << "\n";
+        std::cout << "节目描述:\n" << reg->getDescription() << "\n";
+        std::cout << "────────────────────────────────\n";
+        std::cout << "提交材料:\n";
+        std::cout << (reg->getMaterials().empty() ? "（未提交材料）" : reg->getMaterials()) << "\n";
+        std::cout << "────────────────────────────────\n";
+        std::cout << "当前状态: " << reg->getStatusDisplay() << "\n";
+        if (!reg->getReviewComment().empty()) {
+            std::cout << "审核意见: " << reg->getReviewComment() << "\n";
+        }
+        std::cout << "================================\n";
+
+        if (reg->isApproved()) {
+            std::cout << "\n该报名已通过审核。\n";
+            pauseScreen();
+            continue;
+        }
+
+        // 审核操作
+        std::cout << "\n审核操作:\n";
+        std::cout << "  1. 通过\n";
+        std::cout << "  2. 驳回\n";
+        std::cout << "  0. 返回\n";
+
+        int action = readInt("\n请选择: ", 0, 2);
+        if (action == 0) continue;
+
+        std::string comment;
+        if (action == 2) {
+            comment = readLine("请输入驳回原因: ");
+            if (comment.empty()) {
+                comment = "未通过审核";
+            }
+        }
+
+        if (action == 1) {
+            reg->setStatus("approved");
+            reg->setReviewComment("审核通过");
+            std::cout << "\n已通过该报名！\n";
+        } else {
+            reg->setStatus("rejected");
+            reg->setReviewComment(comment);
+            std::cout << "\n已驳回该报名！\n";
+        }
+
+        dm.saveAll();
+        pauseScreen();
+    }
 }
 
 // ==================== 运行 ====================
