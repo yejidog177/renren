@@ -444,6 +444,10 @@ void Menu::handleAdminAnnouncements() {
                 std::string content, line;
                 while (true) {
                     std::getline(std::cin, line);
+                    if (std::cin.eof()) {
+                        std::cout << "\n检测到输入结束，程序退出。\n";
+                        exit(0);
+                    }
                     if (line == "END") break;
                     if (!content.empty()) content += "\n";
                     content += line;
@@ -492,12 +496,14 @@ void Menu::handleAdminAnnouncements() {
                 std::cout << "新内容 (直接输入 END 保留原内容，输入新内容后以 END 结束):\n";
                 std::string newContent, newLine;
                 std::getline(std::cin, newLine);
+                if (std::cin.eof()) { std::cout << "\n检测到输入结束，程序退出。\n"; exit(0); }
                 if (newLine == "END") {
                     newContent = target->getContent();
                 } else {
                     newContent = newLine;
                     while (true) {
                         std::getline(std::cin, newLine);
+                        if (std::cin.eof()) { std::cout << "\n检测到输入结束，程序退出。\n"; exit(0); }
                         if (newLine == "END") break;
                         newContent += "\n" + newLine;
                     }
@@ -533,10 +539,20 @@ void Menu::handleAdminAnnouncements() {
                 int delId = readInt("\n请选择要删除的公告ID: ", 0, 99999);
                 if (delId == 0) break;
 
+                Announcement* target = dm.findAnnouncement(delId);
+                if (target == NULL) {
+                    std::cout << "\n未找到该公告！\n";
+                    pauseScreen();
+                    break;
+                }
+                std::cout << "\n确认删除公告 \"" << target->getTitle() << "\" ? (1-确认, 0-取消): ";
+                int confirm = readInt("", 0, 1);
+                if (confirm == 0) break;
+
                 if (dm.deleteAnnouncement(delId)) {
                     std::cout << "\n公告删除成功！\n";
                 } else {
-                    std::cout << "\n未找到该公告！\n";
+                    std::cout << "\n公告删除失败！\n";
                 }
                 pauseScreen();
                 break;
