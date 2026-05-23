@@ -415,7 +415,52 @@ void Menu::handleStudentRegistration() {
 void Menu::handleStudentMaterials() {
     clearScreen();
     std::cout << "\n========== 提交材料 ==========\n";
-    std::cout << "\n此功能正在开发中，敬请期待...\n";
+
+    Registration* reg = dm.getRegistrationByUser(currentUser->getUsername());
+
+    if (reg == NULL) {
+        std::cout << "\n请先完成节目报名后再提交材料。\n";
+        pauseScreen();
+        return;
+    }
+
+    if (reg->isApproved()) {
+        std::cout << "\n您的报名已通过审核，材料已锁定。\n";
+        std::cout << "\n当前材料内容:\n";
+        std::cout << (reg->getMaterials().empty() ? "（无）" : reg->getMaterials()) << "\n";
+        pauseScreen();
+        return;
+    }
+
+    // 显示当前材料
+    std::cout << "\n当前已提交的材料:\n";
+    std::cout << "────────────────────────────────\n";
+    if (reg->getMaterials().empty()) {
+        std::cout << "（尚未提交材料）\n";
+    } else {
+        std::cout << reg->getMaterials() << "\n";
+    }
+    std::cout << "────────────────────────────────\n";
+
+    std::cout << "\n请按以下格式填写材料信息:\n";
+    std::cout << "  背景音乐: <文件路径或说明>\n";
+    std::cout << "  歌词/剧本: <文件路径或说明>\n";
+    std::cout << "  道具清单: <列表>\n";
+    std::cout << "  其他材料: <说明>\n";
+    std::cout << "\n请输入材料信息（输入 END 结束，空内容将清空材料）:\n";
+
+    std::string newMaterials, line;
+    while (true) {
+        std::getline(std::cin, line);
+        if (std::cin.eof()) { std::cout << "\n检测到输入结束，程序退出。\n"; exit(0); }
+        if (line == "END") break;
+        if (!newMaterials.empty()) newMaterials += "\n";
+        newMaterials += line;
+    }
+
+    reg->setMaterials(newMaterials);
+    dm.saveAll();
+    std::cout << "\n材料提交成功！\n";
     pauseScreen();
 }
 

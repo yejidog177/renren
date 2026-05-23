@@ -15,6 +15,7 @@ private:
     std::string performer;     // 报名人/表演者
     std::string status;        // 审核状态: pending/approved/rejected
     std::string reviewComment; // 审核意见
+    std::string materials;     // 提交的材料信息
 
 public:
     Registration();
@@ -32,6 +33,7 @@ public:
     std::string getPerformer() const;
     std::string getStatus() const;
     std::string getReviewComment() const;
+    std::string getMaterials() const;
 
     // Setters
     void setProgramType(const std::string& pt);
@@ -41,6 +43,7 @@ public:
     void setPerformer(const std::string& perf);
     void setStatus(const std::string& s);
     void setReviewComment(const std::string& rc);
+    void setMaterials(const std::string& m);
 
     // 状态辅助
     bool isPending() const;

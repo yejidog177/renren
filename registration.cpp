@@ -4,14 +4,14 @@
 Registration::Registration()
     : id(0), username(""), programType(""), duration(0),
       programName(""), description(""), performer(""),
-      status("pending"), reviewComment("") {}
+      status("pending"), reviewComment(""), materials("") {}
 
 Registration::Registration(int i, const std::string& u, const std::string& pt,
                            int d, const std::string& pn, const std::string& desc,
                            const std::string& perf)
     : id(i), username(u), programType(pt), duration(d),
       programName(pn), description(desc), performer(perf),
-      status("pending"), reviewComment("") {}
+      status("pending"), reviewComment(""), materials("") {}
 
 int Registration::getId() const { return id; }
 std::string Registration::getUsername() const { return username; }
@@ -30,6 +30,8 @@ void Registration::setDescription(const std::string& desc) { description = desc;
 void Registration::setPerformer(const std::string& perf) { performer = perf; }
 void Registration::setStatus(const std::string& s) { status = s; }
 void Registration::setReviewComment(const std::string& rc) { reviewComment = rc; }
+void Registration::setMaterials(const std::string& m) { materials = m; }
+std::string Registration::getMaterials() const { return materials; }
 
 bool Registration::isPending() const { return status == "pending"; }
 bool Registration::isApproved() const { return status == "approved"; }
@@ -45,13 +47,13 @@ std::string Registration::serialize() const {
     std::ostringstream oss;
     oss << id << "|" << username << "|" << programType << "|"
         << duration << "|" << programName << "|" << description << "|"
-        << performer << "|" << status << "|" << reviewComment;
+        << performer << "|" << status << "|" << reviewComment << "|" << materials;
     return oss.str();
 }
 
 Registration* Registration::deserialize(const std::string& line) {
     std::istringstream ss(line);
-    std::string idStr, u, pt, durStr, pn, desc, perf, st, rc;
+    std::string idStr, u, pt, durStr, pn, desc, perf, st, rc, mat;
 
     std::getline(ss, idStr, '|');
     std::getline(ss, u, '|');
@@ -62,6 +64,7 @@ Registration* Registration::deserialize(const std::string& line) {
     std::getline(ss, perf, '|');
     std::getline(ss, st, '|');
     std::getline(ss, rc, '|');
+    std::getline(ss, mat, '|');
 
     if (idStr.empty() || u.empty()) return NULL;
 
@@ -72,6 +75,7 @@ Registration* Registration::deserialize(const std::string& line) {
     Registration* r = new Registration(i, u, pt, d, pn, desc, perf);
     r->setStatus(st.empty() ? "pending" : st);
     r->setReviewComment(rc);
+    r->setMaterials(mat);
     return r;
 }
 
