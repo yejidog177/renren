@@ -6,7 +6,7 @@
 #include <ctime>
 
 DataManager::DataManager(const std::string& dir)
-    : dataDir(dir), nextAnnouncementId(1) {
+    : dataDir(dir), nextAnnouncementId(1), nextRegistrationId(1) {
     loadAll();
     if (majors.empty()) {
         initDefaultData();
@@ -23,6 +23,10 @@ DataManager::~DataManager() {
         delete announcements[i];
     }
     announcements.clear();
+    for (size_t i = 0; i < registrations.size(); ++i) {
+        delete registrations[i];
+    }
+    registrations.clear();
 }
 
 void DataManager::initDefaultData() {
@@ -173,6 +177,61 @@ Announcement* DataManager::findAnnouncement(int id) {
     return NULL;
 }
 
+// ==================== Registration Operations ====================
+
+Registration* DataManager::createRegistration(const std::string& username) {
+    Registration* r = new Registration();
+    r->setPerformer(username);
+    return r;
+}
+
+bool DataManager::saveRegistration(Registration* reg) {
+    if (reg->getId() == 0) {
+        // 新报名，分配ID
+        Registration* r = new Registration(
+            nextRegistrationId, reg->getUsername(),
+            reg->getProgramType(), reg->getDuration(),
+            reg->getProgramName(), reg->getDescription(),
+            reg->getPerformer()
+        );
+        registrations.push_back(r);
+        nextRegistrationId++;
+    } else {
+        // 更新已有报名
+        Registration* existing = findRegistration(reg->getId());
+        if (existing != NULL) {
+            existing->setProgramType(reg->getProgramType());
+            existing->setDuration(reg->getDuration());
+            existing->setProgramName(reg->getProgramName());
+            existing->setDescription(reg->getDescription());
+            existing->setPerformer(reg->getPerformer());
+        }
+    }
+    delete reg;
+    saveAll();
+    return true;
+}
+
+Registration* DataManager::getRegistrationByUser(const std::string& username) {
+    for (size_t i = 0; i < registrations.size(); ++i) {
+        if (registrations[i]->getUsername() == username) {
+            return registrations[i];
+        }
+    }
+    return NULL;
+}
+
+Registration* DataManager::findRegistration(int id) {
+    for (size_t i = 0; i < registrations.size(); ++i) {
+        if (registrations[i]->getId() == id) return registrations[i];
+    }
+    return NULL;
+}
+
+const std::vector<Registration*>& DataManager::getAllRegistrations() const {
+    return registrations;
+}
+
 // ==================== Persistence ====================
 
 void DataManager::loadAll() {
@@ -237,6 +296,25 @@ void DataManager::loadAll() {
         }
         af.close();
     }
+
+    // 加载报名
+    std::string regFile = dataDir + "registrations.dat";
+    std::ifstream rf(regFile.c_str());
+    if (rf.is_open()) {
+        std::string line;
+        while (std::getline(rf, line)) {
+            if (!line.empty()) {
+                Registration* r = Registration::deserialize(line);
+                if (r != NULL) {
+                    registrations.push_back(r);
+                    if (r->getId() >= nextRegistrationId) {
+                        nextRegistrationId = r->getId() + 1;
+                    }
+                }
+            }
+        }
+        rf.close();
+    }
 }
 
 void DataManager::saveAll() const {
@@ -279,5 +357,15 @@ void DataManager::saveAll() const {
             af << announcements[i]->serialize() << "\n";
         }
         af.close();
+    }
+
+    // 保存报名
+    std::string regFile = dataDir + "registrations.dat";
+    std::ofstream rf(regFile.c_str());
+    if (rf.is_open()) {
+        for (size_t i = 0; i < registrations.size(); ++i) {
+            rf << registrations[i]->serialize() << "\n";
+        }
+        rf.close();
     }
 }

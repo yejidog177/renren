@@ -302,10 +302,114 @@ void Menu::handleStudentAnnouncements() {
 }
 
 void Menu::handleStudentRegistration() {
-    clearScreen();
-    std::cout << "\n========== 编辑报名节目信息 ==========\n";
-    std::cout << "\n此功能正在开发中，敬请期待...\n";
-    pauseScreen();
+    while (true) {
+        clearScreen();
+        std::cout << "\n========== 编辑报名节目信息 ==========\n";
+
+        // 查找已有报名
+        Registration* reg = dm.getRegistrationByUser(currentUser->getUsername());
+
+        if (reg != NULL) {
+            std::cout << "\n当前报名状态: " << reg->getStatusDisplay() << "\n";
+            std::cout << "\n========== 当前报名信息 ==========\n";
+            std::cout << "节目名称: " << reg->getProgramName() << "\n";
+            std::cout << "节目类型: " << reg->getProgramType() << "\n";
+            std::cout << "节目时长: " << reg->getDuration() << " 分钟\n";
+            std::cout << "表 演 者: " << reg->getPerformer() << "\n";
+            std::cout << "节目描述: " << reg->getDescription() << "\n";
+            std::cout << "==================================\n";
+
+            if (reg->isApproved()) {
+                std::cout << "\n您的报名已通过审核，无法修改。\n";
+                pauseScreen();
+                return;
+            }
+            if (reg->isRejected()) {
+                std::cout << "\n审核意见: " << reg->getReviewComment() << "\n";
+            }
+
+            std::cout << "\n  1. 修改报名信息\n";
+            std::cout << "  0. 返回\n";
+            int choice = readInt("\n请选择: ", 0, 1);
+            if (choice == 0) return;
+        }
+
+        // 新建或修改报名
+        if (reg == NULL) {
+            std::cout << "\n您还没有提交报名，请填写以下信息。\n";
+        }
+
+        // 节目类型选择
+        const std::vector<std::string>& types = Registration::getProgramTypes();
+        std::cout << "\n可选节目类型:\n";
+        for (size_t i = 0; i < types.size(); ++i) {
+            std::cout << "  " << (i + 1) << ". " << types[i] << "\n";
+        }
+        int typeChoice = readInt("请选择节目类型 (1-" + intToString((int)types.size()) + "): ",
+                                 1, (int)types.size());
+        std::string programType = types[typeChoice - 1];
+
+        // 节目名称
+        std::string programName;
+        while (true) {
+            programName = readLine("请输入节目名称: ");
+            if (programName.empty()) {
+                std::cout << "节目名称不能为空！\n";
+            } else if (programName.find('|') != std::string::npos) {
+                std::cout << "节目名称不能包含特殊字符 '|'！\n";
+            } else {
+                break;
+            }
+        }
+
+        // 节目时长
+        int duration = readInt("请输入节目时长 (分钟, 1-30): ", 1, 30);
+
+        // 报名人/表演者
+        std::string defaultPerformer = (reg != NULL) ? reg->getPerformer() : currentUser->getUsername();
+        std::cout << "请输入表演者姓名 (直接回车使用 \"" << defaultPerformer << "\"): ";
+        std::string performer = readLine("");
+        if (performer.empty()) {
+            performer = defaultPerformer;
+        }
+
+        // 节目描述
+        std::cout << "请输入节目描述（输入 END 结束）:\n";
+        std::string desc, descLine;
+        while (true) {
+            std::getline(std::cin, descLine);
+            if (std::cin.eof()) { std::cout << "\n检测到输入结束，程序退出。\n"; exit(0); }
+            if (descLine == "END") break;
+            if (!desc.empty()) desc += "\n";
+            desc += descLine;
+        }
+
+        // 保存
+        Registration* newReg = new Registration();
+        newReg->setPerformer(performer);  // 用于识别用户
+        newReg->setProgramType(programType);
+        newReg->setDuration(duration);
+        newReg->setProgramName(programName);
+        newReg->setDescription(desc);
+
+        if (reg != NULL) {
+            newReg = new Registration(reg->getId(), reg->getUsername(),
+                                       programType, duration, programName,
+                                       desc, performer);
+        } else {
+            newReg = new Registration(0, currentUser->getUsername(),
+                                       programType, duration, programName,
+                                       desc, performer);
+        }
+
+        if (dm.saveRegistration(newReg)) {
+            std::cout << "\n报名信息保存成功！\n";
+        } else {
+            std::cout << "\n保存失败，请重试。\n";
+        }
+        pauseScreen();
+        return;
+    }
 }
 
 void Menu::handleStudentMaterials() {

@@ -3,6 +3,7 @@
 
 #include "user.h"
 #include "announcement.h"
+#include "registration.h"
 #include <vector>
 #include <string>
 #include <map>
@@ -13,7 +14,9 @@ private:
     std::vector<std::string> majors;
     std::map<std::string, std::vector<std::string> > classes;
     std::vector<Announcement*> announcements;
+    std::vector<Registration*> registrations;
     int nextAnnouncementId;
+    int nextRegistrationId;
 
     std::string dataDir;
 
@@ -44,6 +47,13 @@ public:
     std::vector<Announcement*> getAcceptedLists() const;
     std::vector<Announcement*> getGeneralAnnouncements() const;
     Announcement* findAnnouncement(int id);
+
+    // 报名操作
+    Registration* createRegistration(const std::string& username);
+    bool saveRegistration(Registration* reg);
+    Registration* getRegistrationByUser(const std::string& username);
+    Registration* findRegistration(int id);
+    const std::vector<Registration*>& getAllRegistrations() const;
 
     void loadAll();
     void saveAll() const;
