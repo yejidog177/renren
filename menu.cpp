@@ -253,8 +253,52 @@ void Menu::showStudentMenu() {
 void Menu::handleStudentAnnouncements() {
     clearScreen();
     std::cout << "\n========== 公告 & 入选名单 ==========\n";
-    std::cout << "\n此功能正在开发中，敬请期待...\n";
-    pauseScreen();
+
+    while (true) {
+        std::cout << "\n  1. 查看比赛公告\n";
+        std::cout << "  2. 查看到最终入选名单\n";
+        std::cout << "  0. 返回\n";
+
+        int choice = readInt("\n请选择: ", 0, 2);
+        if (choice == 0) return;
+
+        if (choice == 1) {
+            // 查看普通公告
+            clearScreen();
+            std::cout << "\n========== 比赛公告 ==========\n";
+            std::vector<Announcement*> general = dm.getGeneralAnnouncements();
+            if (general.empty()) {
+                std::cout << "\n暂无公告。\n";
+            } else {
+                for (size_t i = 0; i < general.size(); ++i) {
+                    std::cout << "\n────────────────────────────────\n";
+                    std::cout << "标题: " << general[i]->getTitle() << "\n";
+                    std::cout << "发布者: " << general[i]->getAuthor() << "\n";
+                    std::cout << "时间: " << general[i]->getCreateTime() << "\n";
+                    std::cout << "内容:\n" << general[i]->getContent() << "\n";
+                    std::cout << "────────────────────────────────\n";
+                }
+            }
+        } else {
+            // 查看入选名单
+            clearScreen();
+            std::cout << "\n========== 最终入选名单 ==========\n";
+            std::vector<Announcement*> accepted = dm.getAcceptedLists();
+            if (accepted.empty()) {
+                std::cout << "\n暂未公布入选名单。\n";
+            } else {
+                for (size_t i = 0; i < accepted.size(); ++i) {
+                    std::cout << "\n────────────────────────────────\n";
+                    std::cout << "标题: " << accepted[i]->getTitle() << "\n";
+                    std::cout << "发布者: " << accepted[i]->getAuthor() << "\n";
+                    std::cout << "时间: " << accepted[i]->getCreateTime() << "\n";
+                    std::cout << "内容:\n" << accepted[i]->getContent() << "\n";
+                    std::cout << "────────────────────────────────\n";
+                }
+            }
+        }
+        pauseScreen();
+    }
 }
 
 void Menu::handleStudentRegistration() {
@@ -350,10 +394,157 @@ void Menu::showAdminMenu() {
 }
 
 void Menu::handleAdminAnnouncements() {
-    clearScreen();
-    std::cout << "\n========== 编辑和发送公告 ==========\n";
-    std::cout << "\n此功能正在开发中，敬请期待...\n";
-    pauseScreen();
+    while (true) {
+        clearScreen();
+        std::cout << "\n========== 公告管理 ==========\n";
+        std::cout << "\n  1. 查看所有公告\n";
+        std::cout << "  2. 发布新公告\n";
+        std::cout << "  3. 修改公告\n";
+        std::cout << "  4. 删除公告\n";
+        std::cout << "  0. 返回\n";
+
+        int choice = readInt("\n请选择操作: ", 0, 4);
+
+        switch (choice) {
+            case 1: {
+                // 查看所有公告
+                clearScreen();
+                std::cout << "\n========== 所有公告 ==========\n";
+                const std::vector<Announcement*>& all = dm.getAnnouncements();
+                if (all.empty()) {
+                    std::cout << "\n暂无公告。\n";
+                } else {
+                    for (size_t i = 0; i < all.size(); ++i) {
+                        std::cout << "\n────────────────────────────────\n";
+                        std::cout << "ID: " << all[i]->getId();
+                        std::cout << "  类型: " << (all[i]->isAcceptedList() ? "[入选名单]" : "[普通公告]") << "\n";
+                        std::cout << "标题: " << all[i]->getTitle() << "\n";
+                        std::cout << "发布者: " << all[i]->getAuthor() << "\n";
+                        std::cout << "时间: " << all[i]->getCreateTime() << "\n";
+                        std::cout << "内容:\n" << all[i]->getContent() << "\n";
+                        std::cout << "────────────────────────────────\n";
+                    }
+                }
+                pauseScreen();
+                break;
+            }
+            case 2: {
+                // 发布新公告
+                clearScreen();
+                std::cout << "\n========== 发布新公告 ==========\n";
+
+                std::string title = readLine("请输入公告标题: ");
+                if (title.empty()) {
+                    std::cout << "标题不能为空！\n";
+                    pauseScreen();
+                    break;
+                }
+
+                std::cout << "请输入公告内容（输入 END 结束）:\n";
+                std::string content, line;
+                while (true) {
+                    std::getline(std::cin, line);
+                    if (line == "END") break;
+                    if (!content.empty()) content += "\n";
+                    content += line;
+                }
+
+                int typeChoice = readInt("\n公告类型 (1-普通公告, 2-入选名单): ", 1, 2);
+                bool isAccepted = (typeChoice == 2);
+
+                if (dm.addAnnouncement(title, content, currentUser->getUsername(), isAccepted)) {
+                    std::cout << "\n公告发布成功！\n";
+                } else {
+                    std::cout << "\n公告发布失败！\n";
+                }
+                pauseScreen();
+                break;
+            }
+            case 3: {
+                // 修改公告
+                clearScreen();
+                std::cout << "\n========== 修改公告 ==========\n";
+                const std::vector<Announcement*>& all = dm.getAnnouncements();
+                if (all.empty()) {
+                    std::cout << "\n暂无公告可修改。\n";
+                    pauseScreen();
+                    break;
+                }
+                for (size_t i = 0; i < all.size(); ++i) {
+                    std::cout << "  " << all[i]->getId() << ". " << all[i]->getTitle()
+                              << (all[i]->isAcceptedList() ? " [入选名单]" : "") << "\n";
+                }
+                std::cout << "  0. 返回\n";
+
+                int editId = readInt("\n请选择要修改的公告ID: ", 0, 99999);
+                if (editId == 0) break;
+
+                Announcement* target = dm.findAnnouncement(editId);
+                if (target == NULL) {
+                    std::cout << "未找到该公告！\n";
+                    pauseScreen();
+                    break;
+                }
+
+                std::string newTitle = readLine("新标题 (直接回车保留原标题): ");
+                if (newTitle.empty()) newTitle = target->getTitle();
+
+                std::cout << "新内容 (直接输入 END 保留原内容，输入新内容后以 END 结束):\n";
+                std::string newContent, newLine;
+                std::getline(std::cin, newLine);
+                if (newLine == "END") {
+                    newContent = target->getContent();
+                } else {
+                    newContent = newLine;
+                    while (true) {
+                        std::getline(std::cin, newLine);
+                        if (newLine == "END") break;
+                        newContent += "\n" + newLine;
+                    }
+                }
+
+                int typeChoice = readInt("公告类型 (1-普通公告, 2-入选名单): ", 1, 2);
+                bool isAccepted = (typeChoice == 2);
+
+                if (dm.updateAnnouncement(editId, newTitle, newContent, isAccepted)) {
+                    std::cout << "\n公告修改成功！\n";
+                } else {
+                    std::cout << "\n公告修改失败！\n";
+                }
+                pauseScreen();
+                break;
+            }
+            case 4: {
+                // 删除公告
+                clearScreen();
+                std::cout << "\n========== 删除公告 ==========\n";
+                const std::vector<Announcement*>& all = dm.getAnnouncements();
+                if (all.empty()) {
+                    std::cout << "\n暂无公告可删除。\n";
+                    pauseScreen();
+                    break;
+                }
+                for (size_t i = 0; i < all.size(); ++i) {
+                    std::cout << "  " << all[i]->getId() << ". " << all[i]->getTitle()
+                              << (all[i]->isAcceptedList() ? " [入选名单]" : "") << "\n";
+                }
+                std::cout << "  0. 返回\n";
+
+                int delId = readInt("\n请选择要删除的公告ID: ", 0, 99999);
+                if (delId == 0) break;
+
+                if (dm.deleteAnnouncement(delId)) {
+                    std::cout << "\n公告删除成功！\n";
+                } else {
+                    std::cout << "\n未找到该公告！\n";
+                }
+                pauseScreen();
+                break;
+            }
+            case 0:
+                return;
+        }
+    }
 }
 
 void Menu::handleAdminReview() {

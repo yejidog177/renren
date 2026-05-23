@@ -2,6 +2,7 @@
 #define DATAMANAGER_H
 
 #include "user.h"
+#include "announcement.h"
 #include <vector>
 #include <string>
 #include <map>
@@ -11,6 +12,8 @@ private:
     std::vector<User*> users;
     std::vector<std::string> majors;
     std::map<std::string, std::vector<std::string> > classes;
+    std::vector<Announcement*> announcements;
+    int nextAnnouncementId;
 
     std::string dataDir;
 
@@ -30,6 +33,17 @@ public:
 
     const std::vector<std::string>& getClasses(const std::string& major) const;
     bool classExists(const std::string& major, const std::string& className) const;
+
+    // 公告操作
+    bool addAnnouncement(const std::string& title, const std::string& content,
+                         const std::string& author, bool acceptedList);
+    bool updateAnnouncement(int id, const std::string& title,
+                            const std::string& content, bool acceptedList);
+    bool deleteAnnouncement(int id);
+    const std::vector<Announcement*>& getAnnouncements() const;
+    std::vector<Announcement*> getAcceptedLists() const;
+    std::vector<Announcement*> getGeneralAnnouncements() const;
+    Announcement* findAnnouncement(int id);
 
     void loadAll();
     void saveAll() const;

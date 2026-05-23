@@ -3,8 +3,10 @@
 #include <iostream>
 #include <sstream>
 #include <algorithm>
+#include <ctime>
 
-DataManager::DataManager(const std::string& dir) : dataDir(dir) {
+DataManager::DataManager(const std::string& dir)
+    : dataDir(dir), nextAnnouncementId(1) {
     loadAll();
     if (majors.empty()) {
         initDefaultData();
@@ -17,6 +19,10 @@ DataManager::~DataManager() {
         delete users[i];
     }
     users.clear();
+    for (size_t i = 0; i < announcements.size(); ++i) {
+        delete announcements[i];
+    }
+    announcements.clear();
 }
 
 void DataManager::initDefaultData() {
@@ -93,6 +99,80 @@ bool DataManager::classExists(const std::string& major, const std::string& class
     return std::find(clist.begin(), clist.end(), className) != clist.end();
 }
 
+// ==================== Announcement Operations ====================
+
+bool DataManager::addAnnouncement(const std::string& title, const std::string& content,
+                                  const std::string& author, bool acceptedList) {
+    // 生成时间戳
+    time_t now = time(NULL);
+    std::string timeStr = std::string(ctime(&now));
+    // 移除末尾换行符
+    if (!timeStr.empty() && timeStr[timeStr.size() - 1] == '\n') {
+        timeStr.erase(timeStr.size() - 1);
+    }
+
+    Announcement* a = new Announcement(nextAnnouncementId, title, content,
+                                       author, timeStr, acceptedList);
+    announcements.push_back(a);
+    nextAnnouncementId++;
+    saveAll();
+    return true;
+}
+
+bool DataManager::updateAnnouncement(int id, const std::string& title,
+                                     const std::string& content, bool acceptedList) {
+    Announcement* a = findAnnouncement(id);
+    if (a == NULL) return false;
+    a->setTitle(title);
+    a->setContent(content);
+    a->setAcceptedList(acceptedList);
+    saveAll();
+    return true;
+}
+
+bool DataManager::deleteAnnouncement(int id) {
+    for (size_t i = 0; i < announcements.size(); ++i) {
+        if (announcements[i]->getId() == id) {
+            delete announcements[i];
+            announcements.erase(announcements.begin() + i);
+            saveAll();
+            return true;
+        }
+    }
+    return false;
+}
+
+const std::vector<Announcement*>& DataManager::getAnnouncements() const {
+    return announcements;
+}
+
+std::vector<Announcement*> DataManager::getAcceptedLists() const {
+    std::vector<Announcement*> result;
+    for (size_t i = 0; i < announcements.size(); ++i) {
+        if (announcements[i]->isAcceptedList()) {
+            result.push_back(announcements[i]);
+        }
+    }
+    return result;
+}
+
+std::vector<Announcement*> DataManager::getGeneralAnnouncements() const {
+    std::vector<Announcement*> result;
+    for (size_t i = 0; i < announcements.size(); ++i) {
+        if (!announcements[i]->isAcceptedList()) {
+            result.push_back(announcements[i]);
+        }
+    }
+    return result;
+}
+
+Announcement* DataManager::findAnnouncement(int id) {
+    for (size_t i = 0; i < announcements.size(); ++i) {
+        if (announcements[i]->getId() == id) return announcements[i];
+    }
+    return NULL;
+}
+
 // ==================== Persistence ====================
 
 void DataManager::loadAll() {
@@ -138,6 +218,25 @@ void DataManager::loadAll() {
         }
         cf.close();
     }
+
+    // 加载公告
+    std::string announceFile = dataDir + "announcements.dat";
+    std::ifstream af(announceFile.c_str());
+    if (af.is_open()) {
+        std::string line;
+        while (std::getline(af, line)) {
+            if (!line.empty()) {
+                Announcement* a = Announcement::deserialize(line);
+                if (a != NULL) {
+                    announcements.push_back(a);
+                    if (a->getId() >= nextAnnouncementId) {
+                        nextAnnouncementId = a->getId() + 1;
+                    }
+                }
+            }
+        }
+        af.close();
+    }
 }
 
 void DataManager::saveAll() const {
@@ -170,5 +269,15 @@ void DataManager::saveAll() const {
             }
         }
         cf.close();
+    }
+
+    // 保存公告
+    std::string announceFile = dataDir + "announcements.dat";
+    std::ofstream af(announceFile.c_str());
+    if (af.is_open()) {
+        for (size_t i = 0; i < announcements.size(); ++i) {
+            af << announcements[i]->serialize() << "\n";
+        }
+        af.close();
     }
 }
