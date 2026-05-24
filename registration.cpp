@@ -38,9 +38,9 @@ bool Registration::isApproved() const { return status == "approved"; }
 bool Registration::isRejected() const { return status == "rejected"; }
 
 std::string Registration::getStatusDisplay() const {
-    if (status == "approved") return "å·²é€šè¿‡";
-    if (status == "rejected") return "æœªé€šè¿‡";
-    return "å¾…å®¡æ ¸";
+    if (status == "approved") return "ÒÑÍ¨¹ı";
+    if (status == "rejected") return "Î´Í¨¹ı";
+    return "´ıÉóºË";
 }
 
 std::string Registration::serialize() const {
@@ -82,16 +82,16 @@ Registration* Registration::deserialize(const std::string& line) {
 const std::vector<std::string>& Registration::getProgramTypes() {
     static std::vector<std::string> types;
     if (types.empty()) {
-        types.push_back("æ­Œæ›²");
-        types.push_back("èˆè¹ˆ");
-        types.push_back("å°å“");
-        types.push_back("ç›¸å£°");
-        types.push_back("ä¹å™¨æ¼”å¥");
-        types.push_back("é­”æœ¯");
-        types.push_back("æœ—è¯µ");
-        types.push_back("æ­¦æœ¯");
-        types.push_back("æˆå‰§");
-        types.push_back("å…¶ä»–");
+        types.push_back("¸èÇú");
+        types.push_back("Îèµ¸");
+        types.push_back("Ğ¡Æ·");
+        types.push_back("ÏàÉù");
+        types.push_back("ÀÖÆ÷Ñİ×à");
+        types.push_back("Ä§Êõ");
+        types.push_back("ÀÊËĞ");
+        types.push_back("ÎäÊõ");
+        types.push_back("Ï·¾ç");
+        types.push_back("ÆäËû");
     }
     return types;
 }

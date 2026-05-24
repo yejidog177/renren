@@ -30,24 +30,24 @@ DataManager::~DataManager() {
 }
 
 void DataManager::initDefaultData() {
-    majors.push_back("è®¡ç®—æœºç§‘å­¦ä¸æŠ€æœ¯");
-    majors.push_back("è½¯ä»¶å·¥ç¨‹");
-    majors.push_back("ç½‘ç»œå·¥ç¨‹");
+    majors.push_back("¼ÆËã»ú¿ÆÑ§Óë¼¼Êõ");
+    majors.push_back("Èí¼ş¹¤³Ì");
+    majors.push_back("ÍøÂç¹¤³Ì");
 
     std::vector<std::string> cs;
-    cs.push_back("è®¡ç§‘2301"); cs.push_back("è®¡ç§‘2302");
-    cs.push_back("è®¡ç§‘2303"); cs.push_back("è®¡ç§‘2304");
-    classes["è®¡ç®—æœºç§‘å­¦ä¸æŠ€æœ¯"] = cs;
+    cs.push_back("¼Æ¿Æ2301"); cs.push_back("¼Æ¿Æ2302");
+    cs.push_back("¼Æ¿Æ2303"); cs.push_back("¼Æ¿Æ2304");
+    classes["¼ÆËã»ú¿ÆÑ§Óë¼¼Êõ"] = cs;
 
     std::vector<std::string> se;
-    se.push_back("è½¯ä»¶2301"); se.push_back("è½¯ä»¶2302");
-    se.push_back("è½¯ä»¶2303"); se.push_back("è½¯ä»¶2304");
-    classes["è½¯ä»¶å·¥ç¨‹"] = se;
+    se.push_back("Èí¼ş2301"); se.push_back("Èí¼ş2302");
+    se.push_back("Èí¼ş2303"); se.push_back("Èí¼ş2304");
+    classes["Èí¼ş¹¤³Ì"] = se;
 
     std::vector<std::string> ne;
-    ne.push_back("ç½‘ç»œ2301"); ne.push_back("ç½‘ç»œ2302");
-    ne.push_back("ç½‘ç»œ2303"); ne.push_back("ç½‘ç»œ2304");
-    classes["ç½‘ç»œå·¥ç¨‹"] = ne;
+    ne.push_back("ÍøÂç2301"); ne.push_back("ÍøÂç2302");
+    ne.push_back("ÍøÂç2303"); ne.push_back("ÍøÂç2304");
+    classes["ÍøÂç¹¤³Ì"] = ne;
 
 // ==================== User Operations ====================
 
@@ -149,10 +149,10 @@ bool DataManager::deleteClass(const std::string& major, const std::string& class
 
 bool DataManager::addAnnouncement(const std::string& title, const std::string& content,
                                   const std::string& author, bool acceptedList) {
-    // ç”Ÿæˆæ—¶é—´æˆ³
+    // Éú³ÉÊ±¼ä´Á
     time_t now = time(NULL);
     std::string timeStr = std::string(ctime(&now));
-    // ç§»é™¤æœ«å°¾æ¢è¡Œç¬¦
+    // ÒÆ³ıÄ©Î²»»ĞĞ·û
     if (!timeStr.empty() && timeStr[timeStr.size() - 1] == '\n') {
         timeStr.erase(timeStr.size() - 1);
     }
@@ -223,7 +223,7 @@ Announcement* DataManager::findAnnouncement(int id) {
 
 bool DataManager::saveRegistration(Registration* reg) {
     if (reg->getId() == 0) {
-        // æ–°æŠ¥åï¼Œåˆ†é…ID
+        // ĞÂ±¨Ãû£¬·ÖÅäID
         Registration* r = new Registration(
             nextRegistrationId, reg->getUsername(),
             reg->getProgramType(), reg->getDuration(),
@@ -233,7 +233,7 @@ bool DataManager::saveRegistration(Registration* reg) {
         registrations.push_back(r);
         nextRegistrationId++;
     } else {
-        // æ›´æ–°å·²æœ‰æŠ¥åï¼Œå¹¶é‡ç½®å®¡æ ¸çŠ¶æ€
+        // ¸üĞÂÒÑÓĞ±¨Ãû£¬²¢ÖØÖÃÉóºË×´Ì¬
         Registration* existing = findRegistration(reg->getId());
         if (existing != NULL) {
             existing->setProgramType(reg->getProgramType());
@@ -316,7 +316,7 @@ void DataManager::loadAll() {
         cf.close();
     }
 
-    // åŠ è½½å…¬å‘Š
+    // ¼ÓÔØ¹«¸æ
     std::string announceFile = dataDir + "announcements.dat";
     std::ifstream af(announceFile.c_str());
     if (af.is_open()) {
@@ -335,7 +335,7 @@ void DataManager::loadAll() {
         af.close();
     }
 
-    // åŠ è½½æŠ¥å
+    // ¼ÓÔØ±¨Ãû
     std::string regFile = dataDir + "registrations.dat";
     std::ifstream rf(regFile.c_str());
     if (rf.is_open()) {
@@ -387,7 +387,7 @@ void DataManager::saveAll() const {
         cf.close();
     }
 
-    // ä¿å­˜å…¬å‘Š
+    // ±£´æ¹«¸æ
     std::string announceFile = dataDir + "announcements.dat";
     std::ofstream af(announceFile.c_str());
     if (af.is_open()) {
@@ -397,7 +397,7 @@ void DataManager::saveAll() const {
         af.close();
     }
 
-    // ä¿å­˜æŠ¥å
+    // ±£´æ±¨Ãû
     std::string regFile = dataDir + "registrations.dat";
     std::ofstream rf(regFile.c_str());
     if (rf.is_open()) {
