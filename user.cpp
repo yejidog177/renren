@@ -2,7 +2,7 @@
 #include <sstream>
 #include <iostream>
 
-// ç®€å•çš„ XOR å¯†ç ç¼–ç ï¼ˆé˜²æ­¢æ˜æ–‡å­˜å‚¨ï¼‰
+// ¼òµ¥µÄ XOR ÃÜÂë±àÂë£¨·ÀÖ¹Ã÷ÎÄ´æ´¢£©
 std::string User::encode(const std::string& s) {
     std::string result = s;
     for (size_t i = 0; i < result.size(); ++i) {
@@ -12,7 +12,7 @@ std::string User::encode(const std::string& s) {
 }
 
 std::string User::decode(const std::string& s) {
-    return encode(s);  // XOR åŠ å¯†å’Œè§£å¯†æ˜¯åŒä¸€ä¸ªæ“ä½œ
+    return encode(s);  // XOR ¼ÓÃÜºÍ½âÃÜÊÇÍ¬Ò»¸ö²Ù×÷
 }
 
 // ==================== User ====================
@@ -49,14 +49,14 @@ User* User::deserialize(const std::string& line) {
     std::getline(ss, c, '|');
     std::getline(ss, s, '|');
 
-    // æ ¼å¼æ ¡éªŒï¼šç”¨æˆ·åå’Œè§’è‰²ä¸èƒ½ä¸ºç©º
+    // ¸ñÊ½Ğ£Ñé£ºÓÃ»§ÃûºÍ½ÇÉ«²»ÄÜÎª¿Õ
     if (u.empty() || r.empty()) {
         return NULL;
     }
 
     if (r == "student") {
         if (m.empty() || c.empty() || s.empty()) {
-            return NULL;  // å­¦ç”Ÿå¿…é¡»æœ‰å®Œæ•´çš„ä¸“ä¸š/ç­çº§/å­¦å·ä¿¡æ¯
+            return NULL;  // Ñ§Éú±ØĞëÓĞÍêÕûµÄ×¨Òµ/°à¼¶/Ñ§ºÅĞÅÏ¢
         }
         return new Student(u, decode(p), m, c, s);
     } else {
@@ -82,10 +82,10 @@ std::string Student::serialize() const {
 }
 
 void Student::displayInfo() const {
-    std::cout << "\n========== å­¦ç”Ÿä¿¡æ¯ ==========\n";
-    std::cout << "ç”¨æˆ·å: " << username << "\n";
-    std::cout << "ä¸“  ä¸š: " << major << "\n";
-    std::cout << "ç­  çº§: " << className << "\n";
-    std::cout << "å­¦  å·: " << studentId << "\n";
+    std::cout << "\n========== Ñ§ÉúĞÅÏ¢ ==========\n";
+    std::cout << "ÓÃ»§Ãû: " << username << "\n";
+    std::cout << "×¨  Òµ: " << major << "\n";
+    std::cout << "°à  ¼¶: " << className << "\n";
+    std::cout << "Ñ§  ºÅ: " << studentId << "\n";
     std::cout << "================================\n";
 }
